@@ -141,6 +141,7 @@ int main(void)
 
 	sprintf(DataChar,"SPI_TransmitReceive_DMA Start... " ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	HAL_GPIO_WritePin(NSS_GPIO_Port, NSS_Pin, RESET);
 	if(HAL_SPI_TransmitReceive_DMA(&hspi2, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE) != HAL_OK) {
 		sprintf(DataChar," - FAIL\r\n" ) ;
 		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
@@ -246,6 +247,7 @@ void SystemClock_Config(void)
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
+	HAL_GPIO_WritePin(NSS_GPIO_Port, NSS_Pin, SET);
 	sprintf(DataChar,"Cplt-TRANSFER_COMPLETE\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	wTransferState = TRANSFER_COMPLETE;
