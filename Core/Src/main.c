@@ -58,13 +58,12 @@
 
 /* USER CODE BEGIN PV */
 
+//	SPI_HandleTypeDef SpiHandle;
 	char DataChar[0xFF];
 	uint8_t aTxBuffer[BUFFERSIZE] = "SPI-DMA" ;
 	uint8_t aRxBuffer[BUFFERSIZE] = "0123456" ;
 	__IO uint32_t wTransferState = TRANSFER_WAIT;
 	int cnt_i=0;
-
-	//SPI_HandleTypeDef SpiHandle;
 
 /* USER CODE END PV */
 
@@ -114,7 +113,7 @@ int main(void)
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
-	sprintf(DataChar,"\r\n\r\n\tSPI+DMA MAster for VIY.UA\r\n" );
+	sprintf(DataChar,"\r\n\r\n\tSPI+DMA MASTER for VIY.UA\r\n" );
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
 	#define DATE_as_int_str 	(__DATE__)
@@ -143,39 +142,38 @@ int main(void)
 
 /*##-1- Configure the SPI peripheral #######################################*/
 /* Set the SPI parameters */
-//		SpiHandle.Instance               = SPI2;
-//		SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
-//		SpiHandle.Init.Direction         = SPI_DIRECTION_2LINES;
-//		SpiHandle.Init.CLKPhase          = SPI_PHASE_1EDGE;
-//		SpiHandle.Init.CLKPolarity       = SPI_POLARITY_LOW;
-//		SpiHandle.Init.DataSize          = SPI_DATASIZE_8BIT;
-//		SpiHandle.Init.FirstBit          = SPI_FIRSTBIT_MSB;
-//		SpiHandle.Init.TIMode            = SPI_TIMODE_DISABLE;
-//		SpiHandle.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
-//		SpiHandle.Init.CRCPolynomial     = 10;
-//		SpiHandle.Init.NSS               = SPI_NSS_SOFT;
-//		SpiHandle.Init.Mode 			 = SPI_MODE_MASTER;
+//	SpiHandle.Instance               = SPI2;
+//	SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+//	SpiHandle.Init.Direction         = SPI_DIRECTION_2LINES;
+//	SpiHandle.Init.CLKPhase          = SPI_PHASE_1EDGE;
+//	SpiHandle.Init.CLKPolarity       = SPI_POLARITY_LOW;
+//	SpiHandle.Init.DataSize          = SPI_DATASIZE_8BIT;
+//	SpiHandle.Init.FirstBit          = SPI_FIRSTBIT_MSB;
+//	SpiHandle.Init.TIMode            = SPI_TIMODE_DISABLE;
+//	SpiHandle.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
+//	SpiHandle.Init.CRCPolynomial     = 10;
+//	SpiHandle.Init.NSS               = SPI_NSS_SOFT;
+//	SpiHandle.Init.Mode 			 = SPI_MODE_MASTER;
 //
-//		sprintf(DataChar,"MASTER\r\n" ) ;
-//		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+//	sprintf(DataChar,"MASTER\r\n" ) ;
+//	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 //
-//		  if(HAL_SPI_Init(&SpiHandle) != HAL_OK)  {
-//				sprintf(DataChar,"SPI_Init - FAIL\r\n" ) ;
-//				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-//		  } else {
-//				sprintf(DataChar,"SPI_Init - Ok\r\n" ) ;
-//				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-//		  }
+//	  if(HAL_SPI_Init(&SpiHandle) != HAL_OK)  {
+//			sprintf(DataChar,"SPI_Init - FAIL\r\n" ) ;
+//			HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+//	  } else {
+//			sprintf(DataChar,"SPI_Init - Ok\r\n" ) ;
+//			HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+//	  }
 //
-//
-//		/* SPI block is enabled prior calling SPI transmit/receive functions, in order to get CLK signal properly pulled down.
-//		 Otherwise, SPI CLK signal is not clean on this board and leads to errors during transfer */
+//	/* SPI block is enabled prior calling SPI transmit/receive functions, in order to get CLK signal properly pulled down.
+//	 Otherwise, SPI CLK signal is not clean on this board and leads to errors during transfer */
 //	__HAL_SPI_ENABLE(&SpiHandle);
 
-
+//	__HAL_SPI_ENABLE(&hspi2);
 	sprintf(DataChar,"SPI_TransmitReceive_DMA Start... " ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	//if(HAL_SPI_TransmitReceive_DMA(&SpiHandle, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE) != HAL_OK) {
+//	if(HAL_SPI_TransmitReceive_DMA(&SpiHandle, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE) != HAL_OK) {
 	if(HAL_SPI_TransmitReceive_DMA(&hspi2, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE) != HAL_OK) {
 		sprintf(DataChar," - FAIL\r\n" ) ;
 		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
@@ -231,8 +229,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
