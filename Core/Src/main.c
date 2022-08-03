@@ -38,6 +38,15 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+	enum {
+		TRANSFER_WAIT,
+		TRANSFER_COMPLETE,
+		TRANSFER_ERROR
+	};
+
+	#define	BUFFERSIZE	8
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,12 +59,18 @@
 /* USER CODE BEGIN PV */
 
 	char DataChar[0xFF];
+	uint8_t aTxBuffer[BUFFERSIZE] = "SPI-DMA" ;
+	uint8_t aRxBuffer[BUFFERSIZE] = "1234567" ;
+	__IO uint32_t wTransferState = TRANSFER_WAIT;
+	int cnt_i=0;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+	uint16_t BufferCmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferLength);
 
 /* USER CODE END PFP */
 
@@ -106,6 +121,16 @@ int main(void)
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
 	sprintf(DataChar,"\r\n\tfor debug: UART1 115200/8-N-1\r\n" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+	while (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) != GPIO_PIN_RESET) {
+		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);	//BSP_LED_Toggle(LED2);
+		sprintf(DataChar,"  press the button %d \r" , cnt_i++ ) ;
+		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+		HAL_Delay(100);
+	}
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);	//BSP_LED_Off(LED2);
+	sprintf(DataChar,"\r\nButton pressed.\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
   /* USER CODE END 2 */
