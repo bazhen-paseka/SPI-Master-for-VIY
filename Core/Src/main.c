@@ -60,9 +60,11 @@
 
 	char DataChar[0xFF];
 	uint8_t aTxBuffer[BUFFERSIZE] = "SPI-DMA" ;
-	uint8_t aRxBuffer[BUFFERSIZE] = "1234567" ;
+	uint8_t aRxBuffer[BUFFERSIZE] = "0123456" ;
 	__IO uint32_t wTransferState = TRANSFER_WAIT;
 	int cnt_i=0;
+
+	//SPI_HandleTypeDef SpiHandle;
 
 /* USER CODE END PV */
 
@@ -109,7 +111,7 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART1_UART_Init();
-  MX_SPI1_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
 	sprintf(DataChar,"\r\n\r\n\tSPI+DMA MAster for VIY.UA\r\n" );
@@ -124,14 +126,104 @@ int main(void)
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
 	while (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) != GPIO_PIN_RESET) {
-		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);	//BSP_LED_Toggle(LED2);
+		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 		sprintf(DataChar,"  press the button %d \r" , cnt_i++ ) ;
 		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 		HAL_Delay(100);
 	}
-	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);	//BSP_LED_Off(LED2);
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
 	sprintf(DataChar,"\r\nButton pressed.\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+	snprintf(DataChar, BUFFERSIZE + 7 , "1Tx: %s\r\n", aTxBuffer ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+	snprintf(DataChar, BUFFERSIZE + 7 , "1Rx: %s\r\n", aRxBuffer ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+/*##-1- Configure the SPI peripheral #######################################*/
+/* Set the SPI parameters */
+//		SpiHandle.Instance               = SPI2;
+//		SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+//		SpiHandle.Init.Direction         = SPI_DIRECTION_2LINES;
+//		SpiHandle.Init.CLKPhase          = SPI_PHASE_1EDGE;
+//		SpiHandle.Init.CLKPolarity       = SPI_POLARITY_LOW;
+//		SpiHandle.Init.DataSize          = SPI_DATASIZE_8BIT;
+//		SpiHandle.Init.FirstBit          = SPI_FIRSTBIT_MSB;
+//		SpiHandle.Init.TIMode            = SPI_TIMODE_DISABLE;
+//		SpiHandle.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
+//		SpiHandle.Init.CRCPolynomial     = 10;
+//		SpiHandle.Init.NSS               = SPI_NSS_SOFT;
+//		SpiHandle.Init.Mode 			 = SPI_MODE_MASTER;
+//
+//		sprintf(DataChar,"MASTER\r\n" ) ;
+//		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+//
+//		  if(HAL_SPI_Init(&SpiHandle) != HAL_OK)  {
+//				sprintf(DataChar,"SPI_Init - FAIL\r\n" ) ;
+//				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+//		  } else {
+//				sprintf(DataChar,"SPI_Init - Ok\r\n" ) ;
+//				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+//		  }
+//
+//
+//		/* SPI block is enabled prior calling SPI transmit/receive functions, in order to get CLK signal properly pulled down.
+//		 Otherwise, SPI CLK signal is not clean on this board and leads to errors during transfer */
+//	__HAL_SPI_ENABLE(&SpiHandle);
+
+
+	sprintf(DataChar,"SPI_TransmitReceive_DMA Start... " ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	//if(HAL_SPI_TransmitReceive_DMA(&SpiHandle, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE) != HAL_OK) {
+	if(HAL_SPI_TransmitReceive_DMA(&hspi2, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE) != HAL_OK) {
+		sprintf(DataChar," - FAIL\r\n" ) ;
+		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	} else {
+		sprintf(DataChar," - Ok.\r\n" ) ;
+		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	}
+
+	cnt_i = 0;
+	while (wTransferState == TRANSFER_WAIT) {
+		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+		sprintf(DataChar,"  TRANSFER_WAIT.. %d\r", cnt_i++ ) ;
+		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+		HAL_Delay(100);
+	}
+
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
+	sprintf(DataChar,"\r\nTRANSFER_COMPLETED\r\n" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+	snprintf(DataChar, BUFFERSIZE + 7 , "2Tx: %s\r\n", aTxBuffer ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+	sprintf(DataChar,"2Rx: " ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	snprintf(DataChar, BUFFERSIZE + 1 , "%s", aRxBuffer ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	sprintf(DataChar,"\r\n" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+	uint16_t buffer_cmp_res = 0;
+
+	switch(wTransferState) {
+		case TRANSFER_COMPLETE :
+			buffer_cmp_res = BufferCmp((uint8_t*)aTxBuffer, (uint8_t*)aRxBuffer, BUFFERSIZE);
+			sprintf(DataChar,"buffer_cmp_res= %d\r\n", buffer_cmp_res ) ;
+			HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+		  if(buffer_cmp_res)  {
+				sprintf(DataChar,"Buffer cmp - Wrong.\r\n") ;
+				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+		  } else {
+				sprintf(DataChar,"Buffer cmp - Successfully.\r\n") ;
+				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+		  }
+		break;
+		default: {} break;
+	}
 
   /* USER CODE END 2 */
 
@@ -188,6 +280,33 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
+	sprintf(DataChar,"Cplt-TRANSFER_COMPLETE\r\n" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	wTransferState = TRANSFER_COMPLETE;
+}
+//-------------------------------------------------------
+
+void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi) {
+	sprintf(DataChar,"!!!-TRANSFER_ERROR-!!!\r\n" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	wTransferState = TRANSFER_ERROR;
+}
+//-------------------------------------------------------
+
+uint16_t BufferCmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength) {
+	while (BufferLength--) {
+		if((*pBuffer1) != *pBuffer2) {
+			return BufferLength;
+		}
+			pBuffer1++;
+			pBuffer2++;
+	}
+	return 0;
+}
+//-------------------------------------------------------
 
 /* USER CODE END 4 */
 
