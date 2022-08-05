@@ -59,10 +59,11 @@
 /* USER CODE BEGIN PV */
 
 	char DataChar[0xFF];
-	uint8_t aTxBuffer[BUFFERSIZE] = "SPI-DMA" ;
-	uint8_t aRxBuffer[BUFFERSIZE] = "0123456" ;
+	uint8_t aTxBuffer[BUFFERSIZE] = "SPI-DMA7" ;
+	uint8_t aRxBuffer[BUFFERSIZE] = "01234567" ;
 	__IO uint32_t wTransferState = TRANSFER_WAIT;
 	int cnt_i=0;
+	uint8_t	Tx_char = 0x36;
 
 /* USER CODE END PV */
 
@@ -123,6 +124,31 @@ int main(void)
 	sprintf(DataChar,"\r\n\tfor debug: UART1 115200/8-N-1\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+	  aTxBuffer[BUFFERSIZE-1] = Tx_char;
+	  Tx_char++;
+	  if (Tx_char > 0x39) {
+		  Tx_char = 0x30;
+	  }
+	sprintf(DataChar,"1Tx: " ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	snprintf(DataChar, BUFFERSIZE + 1 , "%s", (char*)aTxBuffer ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	sprintf(DataChar,"\r\n" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+	sprintf(DataChar,"1Rx: " ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	snprintf(DataChar, BUFFERSIZE + 1 , "%s", (char*)aRxBuffer ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	sprintf(DataChar,"\r\n" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
 	while (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) != GPIO_PIN_RESET) {
 		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 		sprintf(DataChar,"  press the button %d \r" , cnt_i++ ) ;
@@ -133,40 +159,50 @@ int main(void)
 	sprintf(DataChar,"\r\nButton pressed.\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
-	snprintf(DataChar, BUFFERSIZE + 7 , "1Tx: %s\r\n", aTxBuffer ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	wTransferState = TRANSFER_WAIT;
 
-	snprintf(DataChar, BUFFERSIZE + 7 , "1Rx: %s\r\n", aRxBuffer ) ;
+	sprintf(DataChar,"SPI_TransmitReceive_DMA start.\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	HAL_GPIO_WritePin(NSS_GPIO_Port, NSS_Pin, RESET);
 
-	sprintf(DataChar,"SPI_TransmitReceive_DMA Start... " ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	if(HAL_SPI_TransmitReceive_DMA(&hspi2, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE) != HAL_OK) {
-		sprintf(DataChar," - FAIL\r\n" ) ;
+	uint16_t SPI_Tx_size = BUFFERSIZE;
+	//uint16_t SPI_Tx_size = (uint16_t)Tx_char;
+
+	if(HAL_SPI_TransmitReceive_DMA(&hspi2, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, SPI_Tx_size) != HAL_OK) {
+		HAL_Delay(100); 	//	timeout for CallBack
+		sprintf(DataChar,"Start TransmitReceive_DMA - FAIL\r\n" ) ;
 		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	} else {
-		sprintf(DataChar," - Ok.\r\n" ) ;
+		HAL_Delay(100); 	//	timeout for CallBack
+		sprintf(DataChar,"Start TransmitReceive_DMA - Ok.\r\n" ) ;
 		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	}
 
+//	sprintf(DataChar," \r\n" ) ;
+//	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
 	cnt_i = 0;
-	while (wTransferState == TRANSFER_WAIT) {
+	 do {
 		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 		sprintf(DataChar,"  TRANSFER_WAIT.. %d\r", cnt_i++ ) ;
 		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 		HAL_Delay(100);
-	}
+	} while (wTransferState == TRANSFER_WAIT) ;
 
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-	sprintf(DataChar,"\r\nTRANSFER_COMPLETED\r\n" ) ;
+	sprintf(DataChar,"\r\nMaster Transfer Completed.\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
-	snprintf(DataChar, BUFFERSIZE + 7 , "2Tx: %s\r\n", aTxBuffer ) ;
+	sprintf(DataChar,"2Tx: " ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	snprintf(DataChar, BUFFERSIZE + 1 , "%s", (char*)aTxBuffer ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	sprintf(DataChar,"\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
 	sprintf(DataChar,"2Rx: " ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	snprintf(DataChar, BUFFERSIZE + 1 , "%s", aRxBuffer ) ;
+	snprintf(DataChar, BUFFERSIZE + 1 , "%s", (char*)aRxBuffer ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	sprintf(DataChar,"\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
@@ -183,19 +219,17 @@ int main(void)
 				sprintf(DataChar,"Buffer cmp - Wrong.\r\n") ;
 				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 		  } else {
-				sprintf(DataChar,"Buffer cmp - Successfully.\r\n") ;
+				sprintf(DataChar,"Buffer cmp - Success.\r\n") ;
 				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 		  }
 		break;
 		default: {} break;
 	}
 
-  /* USER CODE END 2 */
+	sprintf(DataChar,"Finaly HAL_Delay(1000)\r\n\r\n" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	HAL_Delay(1000);
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -246,7 +280,8 @@ void SystemClock_Config(void)
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
-	sprintf(DataChar,"Cplt-TRANSFER_COMPLETE\r\n" ) ;
+	HAL_GPIO_WritePin(NSS_GPIO_Port, NSS_Pin, SET);
+	sprintf(DataChar,"Cplt-CallBack: TRANSFER COMPLETE.\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	wTransferState = TRANSFER_COMPLETE;
 }
@@ -260,6 +295,7 @@ void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi) {
 //-------------------------------------------------------
 
 uint16_t BufferCmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength) {
+	BufferLength++;
 	while (BufferLength--) {
 		if((*pBuffer1) != *pBuffer2) {
 			return BufferLength;
