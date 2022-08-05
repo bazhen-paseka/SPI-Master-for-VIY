@@ -63,6 +63,7 @@
 	uint8_t aRxBuffer[BUFFERSIZE] = "01234567" ;
 	__IO uint32_t wTransferState = TRANSFER_WAIT;
 	int cnt_i=0;
+	uint8_t	Tx_char = 0x36;
 
 /* USER CODE END PV */
 
@@ -129,6 +130,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  aTxBuffer[BUFFERSIZE-1] = Tx_char;
+	  Tx_char++;
+	  if (Tx_char > 0x39) {
+		  Tx_char = 0x30;
+	  }
 	sprintf(DataChar,"1Tx: " ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	snprintf(DataChar, BUFFERSIZE + 1 , "%s", (char*)aTxBuffer ) ;
@@ -158,7 +164,11 @@ int main(void)
 	sprintf(DataChar,"SPI_TransmitReceive_DMA start.\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	HAL_GPIO_WritePin(NSS_GPIO_Port, NSS_Pin, RESET);
-	if(HAL_SPI_TransmitReceive_DMA(&hspi2, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE) != HAL_OK) {
+
+	uint16_t SPI_Tx_size = BUFFERSIZE;
+	//uint16_t SPI_Tx_size = (uint16_t)Tx_char;
+
+	if(HAL_SPI_TransmitReceive_DMA(&hspi2, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, SPI_Tx_size) != HAL_OK) {
 		HAL_Delay(100); 	//	timeout for CallBack
 		sprintf(DataChar,"Start TransmitReceive_DMA - FAIL\r\n" ) ;
 		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
