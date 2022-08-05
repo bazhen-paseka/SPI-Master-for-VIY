@@ -123,105 +123,12 @@ int main(void)
 	sprintf(DataChar,"\r\n\tfor debug: UART1 115200/8-N-1\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
-	while (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) != GPIO_PIN_RESET) {
-		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-		sprintf(DataChar,"  press the button %d \r" , cnt_i++ ) ;
-		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-		HAL_Delay(200);
-	}
-	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-	sprintf(DataChar,"\r\nButton pressed.\r\n" ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-
-	sprintf(DataChar,"1Tx: " ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	snprintf(DataChar, BUFFERSIZE + 1 , "%s", (char*)aTxBuffer ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	sprintf(DataChar,"\r\n" ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-
-	sprintf(DataChar,"1Rx: " ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	snprintf(DataChar, BUFFERSIZE + 1 , "%s", (char*)aRxBuffer ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	sprintf(DataChar,"\r\n" ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-
-	sprintf(DataChar,"SPI_TransmitReceive_DMA Start... " ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	HAL_GPIO_WritePin(NSS_GPIO_Port, NSS_Pin, RESET);
-	if(HAL_SPI_TransmitReceive_DMA(&hspi2, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE) != HAL_OK) {
-		sprintf(DataChar," - FAIL\r\n" ) ;
-		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	} else {
-		sprintf(DataChar," - Ok.\r\n" ) ;
-		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	}
-
-	cnt_i = 0;
-	while (wTransferState == TRANSFER_WAIT) {
-		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-		sprintf(DataChar,"  TRANSFER_WAIT.. %d\r", cnt_i++ ) ;
-		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-		HAL_Delay(200);
-	}
-
-	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-	sprintf(DataChar,"\r\nTRANSFER_COMPLETED\r\n" ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-
-	sprintf(DataChar,"2Tx: " ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	snprintf(DataChar, BUFFERSIZE + 1 , "%s", aTxBuffer ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	sprintf(DataChar,"\r\n" ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-
-	sprintf(DataChar,"2Rx: " ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	snprintf(DataChar, BUFFERSIZE + 1 , "%s", aRxBuffer ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	sprintf(DataChar,"\r\n" ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-
-	uint16_t buffer_cmp_res = 0;
-
-	switch(wTransferState) {
-		case TRANSFER_COMPLETE :
-			buffer_cmp_res = BufferCmp((uint8_t*)aTxBuffer, (uint8_t*)aRxBuffer, BUFFERSIZE);
-			sprintf(DataChar,"buffer_cmp_res= %d\r\n", buffer_cmp_res ) ;
-			HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-
-		  if(buffer_cmp_res)  {
-				sprintf(DataChar,"Buffer cmp - Wrong.\r\n") ;
-				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-		  } else {
-				sprintf(DataChar,"Buffer cmp - Successfully.\r\n") ;
-				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-		  }
-		break;
-		default: {} break;
-	}
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	sprintf(DataChar,"HAL_Delay(1000)...\r\n" ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	HAL_Delay(1000);
-	while (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) != GPIO_PIN_RESET) {
-		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-		sprintf(DataChar,"  press the button %d \r" , cnt_i++ ) ;
-		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-		HAL_Delay(200);
-	}
-	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-	sprintf(DataChar,"\r\nButton pressed.\r\n" ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-
 	sprintf(DataChar,"1Tx: " ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	snprintf(DataChar, BUFFERSIZE + 1 , "%s", (char*)aTxBuffer ) ;
@@ -236,27 +143,44 @@ int main(void)
 	sprintf(DataChar,"\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
-	sprintf(DataChar,"SPI_TransmitReceive_DMA Start... " ) ;
+	while (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) != GPIO_PIN_RESET) {
+		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+		sprintf(DataChar,"  press the button %d \r" , cnt_i++ ) ;
+		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+		HAL_Delay(100);
+	}
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
+	sprintf(DataChar,"\r\nButton pressed.\r\n" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+	wTransferState = TRANSFER_WAIT;
+
+	sprintf(DataChar,"SPI_TransmitReceive_DMA start.\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	HAL_GPIO_WritePin(NSS_GPIO_Port, NSS_Pin, RESET);
 	if(HAL_SPI_TransmitReceive_DMA(&hspi2, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE) != HAL_OK) {
-		sprintf(DataChar," - FAIL\r\n" ) ;
+		HAL_Delay(100); 	//	timeout for CallBack
+		sprintf(DataChar,"Start TransmitReceive_DMA - FAIL\r\n" ) ;
 		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	} else {
-		sprintf(DataChar," - Ok.\r\n" ) ;
+		HAL_Delay(100); 	//	timeout for CallBack
+		sprintf(DataChar,"Start TransmitReceive_DMA - Ok.\r\n" ) ;
 		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	}
 
+//	sprintf(DataChar," \r\n" ) ;
+//	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
 	cnt_i = 0;
-	while (wTransferState == TRANSFER_WAIT) {
+	 do {
 		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 		sprintf(DataChar,"  TRANSFER_WAIT.. %d\r", cnt_i++ ) ;
 		HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-		HAL_Delay(200);
-	}
+		HAL_Delay(100);
+	} while (wTransferState == TRANSFER_WAIT) ;
 
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-	sprintf(DataChar,"\r\nTRANSFER_COMPLETED\r\n" ) ;
+	sprintf(DataChar,"\r\nMaster Transfer Completed.\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
 	sprintf(DataChar,"2Tx: " ) ;
@@ -285,12 +209,16 @@ int main(void)
 				sprintf(DataChar,"Buffer cmp - Wrong.\r\n") ;
 				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 		  } else {
-				sprintf(DataChar,"Buffer cmp - Successfully.\r\n") ;
+				sprintf(DataChar,"Buffer cmp - Success.\r\n") ;
 				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 		  }
 		break;
 		default: {} break;
 	}
+
+	sprintf(DataChar,"Finaly HAL_Delay(1000)\r\n\r\n" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	HAL_Delay(1000);
 
     /* USER CODE END WHILE */
 
@@ -343,7 +271,7 @@ void SystemClock_Config(void)
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
 	HAL_GPIO_WritePin(NSS_GPIO_Port, NSS_Pin, SET);
-	sprintf(DataChar,"Cplt-TRANSFER_COMPLETE\r\n" ) ;
+	sprintf(DataChar,"Cplt-CallBack: TRANSFER COMPLETE.\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	wTransferState = TRANSFER_COMPLETE;
 }
