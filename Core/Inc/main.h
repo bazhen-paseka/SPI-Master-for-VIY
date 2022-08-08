@@ -63,6 +63,12 @@ void Error_Handler(void);
 #define BUTTON_GPIO_Port GPIOA
 #define NSS_Pin GPIO_PIN_12
 #define NSS_GPIO_Port GPIOB
+#define CLK_Pin GPIO_PIN_13
+#define CLK_GPIO_Port GPIOB
+#define MISO_Pin GPIO_PIN_14
+#define MISO_GPIO_Port GPIOB
+#define MOSI_Pin GPIO_PIN_15
+#define MOSI_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
