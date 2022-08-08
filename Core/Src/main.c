@@ -43,7 +43,7 @@
 //		TRANSFER_ERROR
 //	};
 
-	#define	BUFFERSIZE	1
+	#define	BUFFERSIZE	8
 
 /* USER CODE END PD */
 
@@ -71,6 +71,8 @@ void SystemClock_Config(void);
 
 	uint16_t BufferCmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferLength);
 	void SendSPI(uint8_t *spi_buffer_u8, uint16_t spi_size_u16 );
+	uint8_t InverseOrderInByte (uint8_t input);
+	void LocalDelayUs ( uint32_t _delay_u32 );
 
 /* USER CODE END PFP */
 
@@ -131,7 +133,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	uint8_t aTxBuffer[BUFFERSIZE] = { 0xFF } ;
+	uint8_t aTxBuffer[BUFFERSIZE] = "SPI_DMA7" ;
 	uint8_t aRxBuffer[BUFFERSIZE] = { 0x00 } ;
 
 	sprintf(DataChar,"1Tx: " ) ;
@@ -305,19 +307,17 @@ uint16_t BufferCmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength) 
 }
 //-------------------------------------------------------
 
-void SendSPI(uint8_t *spi_buffer_u8, uint16_t spi_size_u16 ){
+void SendSPI(uint8_t *spi_buffer_u8, uint16_t spi_size_u16 ) {
 	HAL_GPIO_WritePin(NSS_GPIO_Port, NSS_Pin, RESET);
 	HAL_Delay(1);
 
 	HAL_GPIO_WritePin(MOSI_GPIO_Port, MOSI_Pin, RESET);
 	HAL_Delay(1);
 	for	(int byte = 0; byte < spi_size_u16; byte++) {
+		uint8_t byte_to_Send = InverseOrderInByte(spi_buffer_u8[byte]);
 		for ( int bit=0; bit<8; bit++) {
 			HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET);
-			uint8_t mosi_bit = BIT_CHECK(spi_buffer_u8[byte], bit);
-				sprintf(DataChar," %d", mosi_bit  ) ;
-				HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-
+			uint8_t mosi_bit = BIT_CHECK(byte_to_Send, bit);
 			if (mosi_bit == 0 ) {
 				HAL_GPIO_WritePin(MOSI_GPIO_Port, MOSI_Pin, RESET);
 			} else {
@@ -332,6 +332,27 @@ void SendSPI(uint8_t *spi_buffer_u8, uint16_t spi_size_u16 ){
 }
 //-------------------------------------------------------
 
+uint8_t InverseOrderInByte (uint8_t input) {
+
+    uint8_t var_u8 =((input & 0x01) << 7) |
+					((input & 0x02) << 5) |
+					((input & 0x04) << 3) |
+					((input & 0x08) << 1) |
+					((input & 0x10) >> 1) |
+					((input & 0x20) >> 3) |
+					((input & 0x40) >> 5) |
+					((input & 0x80) >> 7) ;
+    return var_u8 ;
+}
+/***************************************************************************************/
+
+void LocalDelayUs ( uint32_t _delay_u32 ) {
+
+	for ( ; _delay_u32 > 0; _delay_u32-- ) {
+		__asm( "nop" ) ;
+	}
+}
+/***************************************************************************************/
 
 /* USER CODE END 4 */
 
